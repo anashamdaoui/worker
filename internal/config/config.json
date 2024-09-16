@@ -1,0 +1,7 @@
+{
+    "log_level": "DEBUG",
+    "server_port": "",
+    "api_key": "worker-your-api-key",
+    "registry_uri": "http://localhost:8080"
+  }
+  

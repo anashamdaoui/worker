@@ -1,0 +1,11 @@
+
+services:
+  worker:
+    image: worker
+    ports:
+      - "3500-4000"  # Expose the range of possible ports the worker may start on
+    environment:
+      - HOST_IP=0.0.0.0  # Ensure the worker can bind to all interfaces
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
