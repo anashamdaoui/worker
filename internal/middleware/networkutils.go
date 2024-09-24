@@ -30,36 +30,55 @@ func getLocalIPByInterface() (string, error) {
 		return "", err
 	}
 
-	for _, i := range interfaces {
-		// Ignore down and loopback interfaces
-		if i.Flags&net.FlagUp == 0 || i.Flags&net.FlagLoopback != 0 {
+	for _, iface := range interfaces {
+		if !isValidInterface(iface) {
 			continue
 		}
-		addrs, err := i.Addrs()
+
+		ip, err := getInterfaceIP(iface)
 		if err != nil {
-			return "", err
+			continue
 		}
-		for _, addr := range addrs {
-			var ip net.IP
-			switch v := addr.(type) {
-			case *net.IPNet:
-				ip = v.IP
-			case *net.IPAddr:
-				ip = v.IP
-			}
 
-			// Skip loopback addresses
-			if ip == nil || ip.IsLoopback() {
-				continue
-			}
-
-			// Return the first non-loopback IP address found
-			if ip.To4() != nil {
-				return ip.String(), nil
-			}
+		if ip != "" {
+			return ip, nil
 		}
 	}
 	return "", fmt.Errorf("could not find any non-loopback IP address")
+}
+
+func isValidInterface(iface net.Interface) bool {
+	return iface.Flags&net.FlagUp != 0 && iface.Flags&net.FlagLoopback == 0
+}
+
+func getInterfaceIP(iface net.Interface) (string, error) {
+	addrs, err := iface.Addrs()
+	if err != nil {
+		return "", err
+	}
+
+	for _, addr := range addrs {
+		ip := extractIP(addr)
+		if ip != "" {
+			return ip, nil
+		}
+	}
+	return "", nil
+}
+
+func extractIP(addr net.Addr) string {
+	var ip net.IP
+	switch v := addr.(type) {
+	case *net.IPNet:
+		ip = v.IP
+	case *net.IPAddr:
+		ip = v.IP
+	}
+
+	if ip != nil && !ip.IsLoopback() && ip.To4() != nil {
+		return ip.String()
+	}
+	return ""
 }
 
 // Find an available IP address for the worker by trying multiple methods
