@@ -5,9 +5,10 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	grpcServer "worker/grpc/server"
 	"worker/internal/config"
 	"worker/internal/middleware"
-	"worker/internal/server"
+	httpServer "worker/internal/server"
 	"worker/internal/worker"
 
 	"github.com/gorilla/mux"
@@ -38,12 +39,15 @@ func main() {
 	}
 
 	// Start the server in a separate goroutine
-	srv := server.StartServer(router, ready, worker.WorkerInstance.Port)
+	srv := httpServer.StartHTTPServer(router, ready, worker.WorkerInstance.HTTPPort)
 
 	// Wait for the server to signal readiness
 	<-ready
 	worker.Register()
 	logger.Info("", "Server is ready to handle requests.")
+
+	// Start GRPC server
+	grpcServer.StartGRPCServer(worker.WorkerInstance.GRPCPort)
 
 	// Set up signal handling for graceful shutdown
 	sigs := make(chan os.Signal, 1)

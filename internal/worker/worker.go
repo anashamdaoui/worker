@@ -16,7 +16,8 @@ import (
 
 type Worker struct {
 	IP             string
-	Port           int
+	HTTPPort       int
+	GRPCPort       int
 	ID             string
 	LastRegistered time.Time
 }
@@ -34,6 +35,7 @@ func InitializeWorker() error {
 	logger := middleware.GetLogger()
 	logger.Debug("", "Creating NewWorker")
 
+	// IP
 	ip, err := middleware.GetLocalIP()
 
 	if err != nil {
@@ -41,19 +43,33 @@ func InitializeWorker() error {
 		// It is not critical for the worker to manage to get its local IP
 	}
 
+	WorkerInstance.IP = ip
+
+	// HTTP port
 	port := -1
-	if config.AppConfig.ServerPort != "" {
-		port, _ = strconv.Atoi(config.AppConfig.ServerPort)
+	if config.AppConfig.HTTPServerPort != "" {
+		port, _ = strconv.Atoi(config.AppConfig.HTTPServerPort)
 	} else {
-		logger.Debug("", "GetRamdomPort")
-		port = middleware.GetRandomPort(3060, 4000)
+		logger.Debug("", "Use default port 4000")
+		port = 4000
 	}
 
-	WorkerInstance.IP = ip
-	WorkerInstance.Port = port
+	WorkerInstance.HTTPPort = port
+
+	// GRPC port
+	port = -1
+	if config.AppConfig.GRPCServerPort != "" {
+		port, _ = strconv.Atoi(config.AppConfig.GRPCServerPort)
+	} else {
+		logger.Debug("", "Use default port 5000")
+		port = 5000
+	}
+	WorkerInstance.GRPCPort = port
+
+	// Worker ID
 	WorkerInstance.ID = generateUUID()
 
-	logger.Info("", "Woker initialized : \n\t - IP %s \n\t - Port %d \n\t - UUID %s", WorkerInstance.IP, WorkerInstance.Port, WorkerInstance.ID)
+	logger.Info("", "Woker initialized : \n\t - Local IP %s \n\t - HTTP Port %d \n\t - GRPC Port %d \n\t - UUID %s", WorkerInstance.IP, WorkerInstance.HTTPPort, WorkerInstance.GRPCPort, WorkerInstance.ID)
 
 	logger.Debug("", "NewWorker instance created successfully")
 
@@ -98,7 +114,7 @@ func Register() {
 
 	const retries = 4
 	for i := 0; i < retries; i++ {
-		resp, err := registerWorker(config.AppConfig.RegistryURI, WorkerInstance.ID, WorkerInstance.Port, config.AppConfig.APIKey)
+		resp, err := registerWorker(config.AppConfig.RegistryURI, WorkerInstance.ID, WorkerInstance.HTTPPort, config.AppConfig.APIKey)
 		isRegistered = err == nil && resp.StatusCode == http.StatusOK
 		if !isRegistered {
 			// Log the error and implement a retry mechanism
@@ -114,5 +130,4 @@ func Register() {
 	if !isRegistered {
 		log.Fatalf("Fatal Error: worker did not manage to register... Exiting")
 	}
-
 }

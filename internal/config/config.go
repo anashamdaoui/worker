@@ -8,10 +8,11 @@ import (
 
 // Config holds the application configuration
 type Config struct {
-	LogLevel    string `json:"log_level"`
-	ServerPort  string `json:"server_port"`
-	APIKey      string `json:"api_key"`
-	RegistryURI string `json:"registry_uri"`
+	LogLevel       string `json:"log_level"`
+	HTTPServerPort string `json:"http_server_port"`
+	GRPCServerPort string `json:"grpc_server_port"`
+	APIKey         string `json:"api_key"`
+	RegistryURI    string `json:"registry_uri"`
 }
 
 // AppConfig is a global variable that holds the loaded configuration
@@ -34,16 +35,19 @@ func LoadConfig(configFile string) {
 
 	// Override with environment variables if available
 	overrideWithEnv()
-	log.Printf("Static Configuration: \n\t - Log level: %s \n\t - Server port: %s \n\t - API key: %s \n\t - Registry URI: %s",
-		AppConfig.LogLevel, AppConfig.ServerPort, AppConfig.APIKey, AppConfig.RegistryURI)
+	log.Printf("Static Configuration: \n\t - Log level: %s \n\t - HTTP Server port: %s \n\t - GRPC Server port: %s \n\t - API key: %s \n\t - Registry URI: %s",
+		AppConfig.LogLevel, AppConfig.HTTPServerPort, AppConfig.GRPCServerPort, AppConfig.APIKey, AppConfig.RegistryURI)
 
 	log.Println("", "Configuration loaded successfully.")
 }
 
 // overrideWithEnv checks for environment variables and overrides config values
 func overrideWithEnv() {
-	if port := os.Getenv("WORKER_SERVER_PORT"); port != "" {
-		AppConfig.ServerPort = port
+	if port := os.Getenv("WORKER_HTTP_PORT"); port != "" {
+		AppConfig.HTTPServerPort = port
+	}
+	if port := os.Getenv("WORKER_GRPC_PORT"); port != "" {
+		AppConfig.GRPCServerPort = port
 	}
 	if logLevel := os.Getenv("WORKER_LOG_LEVEL"); logLevel != "" {
 		AppConfig.LogLevel = logLevel

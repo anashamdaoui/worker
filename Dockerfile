@@ -7,7 +7,7 @@ WORKDIR /app
 # Set environment variables for cross-compilation
 # Adjust these to match the target architecture, e.g., 'linux/arm64' or 'linux/amd64'
 ENV GOOS=linux
-ENV GOARCH=amd64
+ENV GOARCH=arm64
 ENV CGO_ENABLED=0
 
 # Copy the go.mod and go.sum to leverage Docker cache. Security: avoid global pattern / recursive copy
@@ -18,6 +18,7 @@ RUN go mod download
 # Copy the current directory contents into the container at /app. Security: avoid global pattern / recursive copy
 COPY internal/ ./internal/
 COPY cmd/ ./cmd
+COPY grpc/ ./grpc/
 
 # Build the Go app with cross-compilation settings. Using -ldflags="-s -w" removes debugging information, reducing binary size.
 RUN go build -ldflags="-s -w" -o worker ./cmd/...

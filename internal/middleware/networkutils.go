@@ -104,3 +104,14 @@ func GetRandomPort(min, max int) int {
 	rand.New(rand.NewSource(time.Now().UnixNano()))
 	return rand.Intn(max-min+1) + min
 }
+
+// Get Docker container ID
+func GetDockerContainerID() (string, error) {
+	// Get containerID
+	hostname, err := os.Hostname()
+	if err != nil {
+		return "", fmt.Errorf("failed to retrieve docker container ID: %w", err)
+	}
+
+	return hostname, nil
+}

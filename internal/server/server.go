@@ -21,7 +21,7 @@ func healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // StartServer starts the HTTP server for the registry service and returns the server instance.
-func StartServer(router *mux.Router, ready chan struct{}, port int) *http.Server {
+func StartHTTPServer(router *mux.Router, ready chan struct{}, port int) *http.Server {
 
 	router.Use(middleware.RequestID)        // Add Request ID middleware
 	router.Use(middleware.LoggerMiddleware) // Add Logger middleware
@@ -35,7 +35,7 @@ func StartServer(router *mux.Router, ready chan struct{}, port int) *http.Server
 		Handler: router,
 	}
 
-	log.Printf("Starting HTTP server on : %d...", port)
+	log.Printf("Starting HTTP server on port : %d...", port)
 	close(ready) // Signal that the server is ready
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
