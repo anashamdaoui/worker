@@ -105,7 +105,7 @@ func GetRandomPort(min, max int) int {
 	return rand.Intn(max-min+1) + min
 }
 
-// Get Docker container ID
+// Get hostname. Makes sense to use it only when using Docker to get the container ID.
 func GetDockerContainerID() (string, error) {
 	// Get containerID
 	hostname, err := os.Hostname()
