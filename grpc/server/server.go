@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-type server struct {
+type Server struct {
 	proto.UnimplementedSoftPhoneServiceServer
 }
 
@@ -21,7 +21,7 @@ func StartGRPCServer(port int) {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	proto.RegisterSoftPhoneServiceServer(s, &server{})
+	proto.RegisterSoftPhoneServiceServer(s, &Server{})
 
 	log.Printf("Server listening at %v", lis.Addr())
 	if err := s.Serve(lis); err != nil {
